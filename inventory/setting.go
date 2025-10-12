@@ -233,7 +233,7 @@ var (
 					Type:        types.ViewerTypeCustom,
 					DisplayName: "fileManager.m365viewer",
 					Icon:        "/static/img/viewers/m365.svg",
-					Url:         "https://view.officeapps.live.com/op/view.aspx?src={$src}",
+					Url:         "https://view.officeapps.live.com/op/edit.aspx?src={$src}",
 					Exts:        []string{"doc", "docx", "docm", "dotm", "dotx", "xlsx", "xlsb", "xls", "xlsm", "pptx", "ppsx", "ppt", "pps", "pptm", "potm", "ppam", "potx", "ppsm"},
 					MaxSize:     10485760,
 				},
