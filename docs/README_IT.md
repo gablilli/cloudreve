@@ -10,6 +10,13 @@ Inizia subito! Guida veloce per:
 - Compilazione rapida del backend
 - FAQ e troubleshooting rapido
 
+### 🎨 [Guida Visuale](./VISUAL_GUIDE_IT.md)
+Diagrammi e illustrazioni per capire meglio:
+- Architettura del sistema con diagrammi ASCII
+- Flusso di lavoro completo (sequenza)
+- Setup produzione Docker visualizzato
+- Troubleshooting con diagrammi di flusso
+
 ### [Configurazione WOPI per Office Online](./WOPI_SETUP_IT.md)
 Guida completa per configurare l'editing online dei documenti Office utilizzando il protocollo WOPI. Include:
 - Installazione di server WOPI (Collabora Online, Office Online Server, ONLYOFFICE)
