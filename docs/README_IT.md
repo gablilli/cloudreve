@@ -17,6 +17,14 @@ Guida completa per configurare l'editing online dei documenti Office utilizzando
 - Risoluzione dei problemi comuni
 - Best practices per la sicurezza
 
+### [Esempi di Configurazione](./EXAMPLES_IT.md)
+Esempi pratici e pronti all'uso per diversi scenari:
+- Setup locale per test con Docker
+- Configurazione produzione con SSL/TLS e Nginx
+- Multi-tenant con isolamento
+- Script di deploy automatizzato
+- Monitoraggio e troubleshooting
+
 ### [Istruzioni per la Compilazione](./BUILD_INSTRUCTIONS_IT.md)
 Guida dettagliata per compilare Cloudreve dal codice sorgente. Include:
 - Requisiti software
