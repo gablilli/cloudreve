@@ -1,4 +1,4 @@
-[English Version](https://github.com/cloudreve/Cloudreve/blob/master/README.md)
+[English Version](https://github.com/cloudreve/Cloudreve/blob/master/README.md) | [Documentazione Italiana](./docs/README_IT.md)
 
 <h1 align="center">
   <br>
