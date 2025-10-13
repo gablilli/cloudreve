@@ -1,4 +1,4 @@
-[中文版本](https://github.com/cloudreve/Cloudreve/blob/master/README_zh-CN.md)
+[中文版本](https://github.com/cloudreve/Cloudreve/blob/master/README_zh-CN.md) | [Documentazione Italiana](./docs/README_IT.md)
 
 <h1 align="center">
   <br>
