@@ -4,6 +4,12 @@ Questa directory contiene documentazione in italiano per Cloudreve.
 
 ## Guide Disponibili
 
+### 🚀 [Guida Rapida](./QUICK_START_IT.md)
+Inizia subito! Guida veloce per:
+- Abilitare l'editing online con Office in 3 passi (10 minuti)
+- Compilazione rapida del backend
+- FAQ e troubleshooting rapido
+
 ### [Configurazione WOPI per Office Online](./WOPI_SETUP_IT.md)
 Guida completa per configurare l'editing online dei documenti Office utilizzando il protocollo WOPI. Include:
 - Installazione di server WOPI (Collabora Online, Office Online Server, ONLYOFFICE)
