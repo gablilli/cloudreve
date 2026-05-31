@@ -77,12 +77,16 @@ jobs:
       - name: Build and push Docker image
         run: |
           export COMMIT_SHA=$(git rev-parse --short HEAD)
-          export VERSION=$(git describe --tags 2>/dev/null || echo "4.1.0 pro")
+          export VERSION=$(git describe --tags 2>/dev/null || echo "4.0.0")
           docker build \
             --build-arg VERSION=$VERSION \
             --build-arg COMMIT_SHA=$COMMIT_SHA \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:latest \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:$VERSION .
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:$VERSION \
+            .
+
+      - name: Push Docker image
+        run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:$VERSION
 
