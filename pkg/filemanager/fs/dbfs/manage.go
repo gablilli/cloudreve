@@ -15,6 +15,7 @@ import (
 	"github.com/cloudreve/Cloudreve/v4/pkg/filemanager/fs"
 	"github.com/cloudreve/Cloudreve/v4/pkg/hashid"
 	"github.com/cloudreve/Cloudreve/v4/pkg/serializer"
+	"github.com/cloudreve/Cloudreve/v4/pkg/util"
 	"github.com/samber/lo"
 	"golang.org/x/tools/container/intsets"
 )
@@ -89,6 +90,11 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType types.FileType
 		}
 
 		if i < len(desired)-1 || fileType == types.FileTypeFolder {
+			policy, err := f.getPreferredPolicy(ctx, ancestor)
+			if err != nil {
+				return nil, err
+			}
+
 			args := &inventory.CreateFolderParameters{
 				Owner: ancestor.Model.OwnerID,
 				Name:  desired[i],
@@ -116,6 +122,13 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType types.FileType
 
 			if err := inventory.Commit(tx); err != nil {
 				return nil, serializer.NewError(serializer.CodeDBError, "Failed to commit folder creation", err)
+			}
+
+			if policy.Type == types.PolicyTypeLocal {
+				folderPath := generateSavePath(policy, &fs.UploadRequest{Props: &fs.UploadProps{Uri: path}}, f.user)
+				if err := util.CreatNestedFolder(filepath.FromSlash(folderPath)); err != nil {
+					return nil, serializer.NewError(serializer.CodeIOFailed, "Failed to create folder on local storage", err)
+				}
 			}
 
 			ancestor = newFile(ancestor, newFolder)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/cloudreve/Cloudreve/v4/pkg/logging"
 	"github.com/cloudreve/Cloudreve/v4/pkg/serializer"
 	"github.com/cloudreve/Cloudreve/v4/pkg/setting"
-	"github.com/cloudreve/Cloudreve/v4/pkg/util"
 	"github.com/gofrs/uuid"
 	"github.com/samber/lo"
 	"golang.org/x/tools/container/intsets"
@@ -787,19 +787,38 @@ func (f *DBFS) navigatorId(path *fs.URI) string {
 
 // generateSavePath generates the physical save path for the upload request.
 func generateSavePath(policy *ent.StoragePolicy, req *fs.UploadRequest, user *ent.User) string {
-	currentTime := time.Now()
-	dynamicReplace := func(rule string, pathAvailable bool) string {
-		return util.ReplaceMagicVar(rule, fs.Separator, pathAvailable, false, currentTime, user.ID, req.Props.Uri.Name(), req.Props.Uri.Dir(), "")
+	_ = policy
+
+	userDir := physicalUserDir(user)
+	relativePath := filepath.ToSlash(strings.TrimPrefix(req.Props.Uri.PathTrimmed(), fs.Separator))
+	if relativePath == "" {
+		return userDir
 	}
 
-	dirRule := policy.DirNameRule
-	dirRule = filepath.ToSlash(dirRule)
-	dirRule = dynamicReplace(dirRule, true)
+	return path.Join(userDir, relativePath)
+}
 
-	nameRule := policy.FileNameRule
-	nameRule = dynamicReplace(nameRule, false)
+func physicalUserDir(user *ent.User) string {
+	if user == nil {
+		return "unknown"
+	}
 
-	return path.Join(path.Clean(dirRule), nameRule)
+	name := strings.TrimSpace(user.Nick)
+	if name == "" {
+		name = strings.TrimSpace(user.Email)
+	}
+	if name == "" {
+		name = fmt.Sprintf("user-%d", user.ID)
+	}
+
+	name = strings.ReplaceAll(name, "\\", "_")
+	name = strings.ReplaceAll(name, "/", "_")
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return fmt.Sprintf("user-%d", user.ID)
+	}
+
+	return name
 }
 
 func canMoveOrCopyTo(src, dst *fs.URI, isCopy bool) bool {
