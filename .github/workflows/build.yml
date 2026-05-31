@@ -1,0 +1,86 @@
+name: Build Cloudreve
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          recurse-submodules: true
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Build frontend
+        run: |
+          export VERSION=$(git describe --tags 2>/dev/null || echo "4.0.0")
+          chmod +x ./.build/build-assets.sh
+          ./.build/build-assets.sh $VERSION
+
+      - name: Write Dockerfile
+        run: |
+          cat > Dockerfile << 'DOCKERFILE'
+          FROM golang:1.22-alpine AS builder
+          ARG VERSION=4.0.0
+          ARG COMMIT_SHA=unknown
+          RUN apk add --no-cache git bash
+          WORKDIR /app
+          COPY . .
+          RUN go build -a -o cloudreve \
+                -ldflags "-s -w \
+                  -X 'github.com/cloudreve/Cloudreve/v4/application/constants.BackendVersion=${VERSION}' \
+                  -X 'github.com/cloudreve/Cloudreve/v4/application/constants.LastCommit=${COMMIT_SHA}'"
+          FROM alpine:latest
+          RUN apk update && apk add --no-cache \
+              tzdata vips-tools ffmpeg libreoffice aria2 supervisor \
+              font-noto font-noto-cjk libheif libraw ca-certificates
+          WORKDIR /cloudreve
+          COPY .build/aria2.supervisor.conf .build/entrypoint.sh ./
+          COPY --from=builder /app/cloudreve ./cloudreve
+          RUN chmod +x ./cloudreve && chmod +x ./entrypoint.sh
+          EXPOSE 5212
+          ENTRYPOINT ["./entrypoint.sh"]
+          DOCKERFILE
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          export COMMIT_SHA=$(git rev-parse --short HEAD)
+          export VERSION=$(git describe --tags 2>/dev/null || echo "4.0.0")
+          docker build \
+            --build-arg VERSION=$VERSION \
+            --build-arg COMMIT_SHA=$COMMIT_SHA \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:latest \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:$VERSION .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:$VERSION
+
+      - name: Export Docker image as artifact
+        run: docker save ${{ secrets.DOCKERHUB_USERNAME }}/cloudreve:latest | gzip > cloudreve-docker.tar.gz
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudreve-docker
+          path: cloudreve-docker.tar.gz
