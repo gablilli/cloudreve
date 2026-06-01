@@ -43,31 +43,6 @@ jobs:
           mkdir -p application/statics
           zip -r - assets/build > application/statics/assets.zip
 
-      - name: Write Dockerfile
-        run: |
-          cat > Dockerfile << 'DOCKERFILE'
-          FROM golang:1.25-alpine AS builder
-          ARG VERSION=4.0.0
-          ARG COMMIT_SHA=unknown
-          RUN apk add --no-cache git bash
-          WORKDIR /app
-          COPY . .
-          RUN go build -a -o cloudreve \
-                -ldflags "-s -w \
-                  -X 'github.com/cloudreve/Cloudreve/v4/application/constants.BackendVersion=${VERSION}' \
-                  -X 'github.com/cloudreve/Cloudreve/v4/application/constants.LastCommit=${COMMIT_SHA}'"
-          FROM alpine:latest
-          RUN apk update && apk add --no-cache \
-              tzdata vips-tools ffmpeg libreoffice aria2 supervisor \
-              font-noto font-noto-cjk libheif libraw ca-certificates
-          WORKDIR /cloudreve
-          COPY .build/aria2.supervisor.conf .build/entrypoint.sh ./
-          COPY --from=builder /app/cloudreve ./cloudreve
-          RUN chmod +x ./cloudreve && chmod +x ./entrypoint.sh
-          EXPOSE 5212
-          ENTRYPOINT ["./entrypoint.sh"]
-          DOCKERFILE
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
